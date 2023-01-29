@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zdz.mapper.ArticleMapper">
+
+    <resultMap id="BaseResultMap" type="com.zdz.domain.entity.Article">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="title" column="title" jdbcType="VARCHAR"/>
+            <result property="content" column="content" jdbcType="VARCHAR"/>
+            <result property="summary" column="summary" jdbcType="VARCHAR"/>
+            <result property="categoryId" column="category_id" jdbcType="BIGINT"/>
+            <result property="thumbnail" column="thumbnail" jdbcType="VARCHAR"/>
+            <result property="isTop" column="is_top" jdbcType="CHAR"/>
+            <result property="status" column="status" jdbcType="CHAR"/>
+            <result property="viewCount" column="view_count" jdbcType="BIGINT"/>
+            <result property="isComment" column="is_comment" jdbcType="CHAR"/>
+            <result property="createBy" column="create_by" jdbcType="BIGINT"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="updateBy" column="update_by" jdbcType="BIGINT"/>
+            <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+            <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,title,content,
+        summary,category_id,thumbnail,
+        is_top,status,view_count,
+        is_comment,create_by,create_time,
+        update_by,update_time,del_flag
+    </sql>
+<!--    <select id="selectArticleListPage" resultType="com.zdz.domain.vo.ArticleListVo">-->
+<!--        select a.id, a.title,a.summary,a.thumbnail,a.view_count,a.create_time,c.name as category_name-->
+<!--               from sg_article a left join sg_category c-->
+<!--                   on a.category_id=c.id ${ew.customSqlSegment}-->
+<!--    </select>-->
+</mapper>

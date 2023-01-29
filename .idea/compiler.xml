@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile default="true" name="Default" enabled="true" />
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="SG-framework" />
+        <module name="SG-admin" />
+        <module name="SG-blog" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="SG-admin" target="1.8" />
+      <module name="SG-blog" target="1.8" />
+      <module name="SG-framework" target="1.8" />
+      <module name="SGBlog" target="1.8" />
+    </bytecodeTargetLevel>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="SG-admin" options="-parameters" />
+      <module name="SG-blog" options="-parameters" />
+      <module name="SG-framework" options="-parameters" />
+    </option>
+  </component>
+</project>

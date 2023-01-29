@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import java.io.Serializable;
 import java.util.Date;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
 /**
@@ -14,6 +15,7 @@ import lombok.experimental.Accessors;
  * @TableName sg_article
  */
 @TableName(value ="sg_article")
+@NoArgsConstructor
 @Data
 public class Article implements Serializable {
     /**
@@ -94,4 +96,9 @@ public class Article implements Serializable {
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
+
+    public Article(Long id, Long viewCount) {
+        this.id = id;
+        this.viewCount = viewCount;
+    }
 }

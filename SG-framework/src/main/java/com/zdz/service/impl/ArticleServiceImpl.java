@@ -32,8 +32,6 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
     implements ArticleService {
 
     @Autowired
-    private ArticleMapper articleMapper;
-    @Autowired
     private CategoryMapper categoryMapper;
     @Autowired
     private RedisCache redisCache;
@@ -50,6 +48,9 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
         page(page,queryWrapper);
         List<Article> articles = page.getRecords();
         List<HotArticleVo> hotArticleVos = BeanCopyPropertiesUtils.copyBeanList(articles, HotArticleVo.class);
+        hotArticleVos = hotArticleVos.stream()
+                .map(hotArticleVo -> hotArticleVo.setViewCount(Long.valueOf((Integer)redisCache.getCacheMapValue(RedisConstants.ARTICLE_VIEW_COUNT,hotArticleVo.getId().toString()))))
+                .collect(Collectors.toList());
         return ResponseResult.okResult(hotArticleVos);
     }
 
@@ -69,7 +70,10 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
 
         List<ArticleListVo> articleListVos = BeanCopyPropertiesUtils.copyBeanList(articles,ArticleListVo.class);
         articleListVos = articleListVos.stream()
-                .map(articleListVo -> articleListVo.setCategoryName(categoryMapper.selectById(articleListVo.getCategoryId()).getName()))
+                .peek(articleListVo -> {
+                    articleListVo.setCategoryName(categoryMapper.selectById(articleListVo.getCategoryId()).getName());
+                    articleListVo.setViewCount(Long.valueOf((Integer)redisCache.getCacheMapValue(RedisConstants.ARTICLE_VIEW_COUNT,articleListVo.getId().toString())));
+                })
                 .collect(Collectors.toList());
         PageVo pageVo = new PageVo(articleListVos,page.getTotal());
         return ResponseResult.okResult(pageVo);
@@ -80,6 +84,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
         Article article = getById(id);
         ArticleDetailsVo articleDetailsVo = BeanCopyPropertiesUtils.copyBean(article, ArticleDetailsVo.class);
         articleDetailsVo.setCategoryName(categoryMapper.selectById(article.getCategoryId()).getName());
+        articleDetailsVo.setViewCount(Long.valueOf((Integer)redisCache.getCacheMapValue(RedisConstants.ARTICLE_VIEW_COUNT,id.toString())));
         return ResponseResult.okResult(articleDetailsVo);
     }
 

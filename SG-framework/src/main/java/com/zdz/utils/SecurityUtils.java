@@ -1,5 +1,6 @@
 package com.zdz.utils;
 
+import com.zdz.constants.CommonConstants;
 import com.zdz.domain.entity.LoginUser;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -25,5 +26,9 @@ public class SecurityUtils {
      */
     public static Long getUserId() {
         return getLoginUser().getUser().getId();
+    }
+
+    public static boolean isSuperAdmin(){
+        return getUserId().equals(CommonConstants.SUPER_ADMIN);
     }
 }

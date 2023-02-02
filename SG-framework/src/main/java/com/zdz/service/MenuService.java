@@ -1,7 +1,11 @@
 package com.zdz.service;
 
+import com.zdz.domain.ResponseResult;
 import com.zdz.domain.entity.Menu;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.zdz.domain.vo.RoutersVo;
+
+import java.util.List;
 
 /**
 * @author zdz
@@ -10,4 +14,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 */
 public interface MenuService extends IService<Menu> {
 
+    List<String> selectPermsByUserId(Long userId);
+
+    ResponseResult<RoutersVo> getRouters();
 }

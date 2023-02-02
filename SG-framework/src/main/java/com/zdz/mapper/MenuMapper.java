@@ -3,6 +3,8 @@ package com.zdz.mapper;
 import com.zdz.domain.entity.Menu;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
+import java.util.List;
+
 /**
 * @author zdz
 * @description 针对表【sys_menu(菜单权限表)】的数据库操作Mapper
@@ -11,6 +13,9 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 */
 public interface MenuMapper extends BaseMapper<Menu> {
 
+    List<String> selectPermsByUserId(Long userId);
+
+    List<Menu> selectRoutersByUserId(Long userId);
 }
 
 

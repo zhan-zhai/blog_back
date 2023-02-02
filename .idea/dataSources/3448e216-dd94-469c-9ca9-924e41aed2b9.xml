@@ -915,14 +915,12 @@ SELECT|sys.sys_config
       <Comment>文章id</Comment>
       <DataType>bigint(20)|0s</DataType>
       <NotNull>1</NotNull>
-      <SequenceIdentity>null</SequenceIdentity>
     </column>
     <column id="273" parent="246" name="tag_id">
       <Position>2</Position>
       <Comment>标签id</Comment>
       <DataType>bigint(20)|0s</DataType>
       <NotNull>1</NotNull>
-      <DefaultExpression>0</DefaultExpression>
     </column>
     <key id="274" parent="246" name="PRIMARY">
       <NameSurrogate>1</NameSurrogate>

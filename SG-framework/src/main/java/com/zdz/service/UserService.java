@@ -7,6 +7,7 @@ import com.zdz.domain.dto.UserInfoDto;
 import com.zdz.domain.entity.User;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.zdz.domain.vo.LoginVo;
+import com.zdz.domain.vo.SystemUserInfoVo;
 import com.zdz.domain.vo.UserInfoVo;
 
 /**
@@ -25,4 +26,9 @@ public interface UserService extends IService<User> {
     ResponseResult<?> updateUserInfo(UserInfoDto userInfoDto);
 
     ResponseResult<?> register(RegisterDto registerDto);
+
+    ResponseResult<?> systemLogin(LoginDto loginDto);
+
+    ResponseResult<?> systemLogout();
+
 }

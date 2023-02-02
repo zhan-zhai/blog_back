@@ -10,6 +10,7 @@ public enum AppHttpCodeEnum {
     NO_OPERATOR_AUTH(403, "无权限操作"),
 
     SYSTEM_ERROR(500, "出现错误"),
+    NEED_ADMIN(501, "非管理员无法登陆"),
     EMAIL_EXIST(503, "邮箱已存在"),
     REQUIRE_USERNAME(504, "必需填写用户名"),
     CONTENT_NOT_NULL(506, "评论内容不能为空"),
@@ -21,7 +22,7 @@ public enum AppHttpCodeEnum {
     LOGIN_ERROR(505, "用户名或密码错误"),
     COMMENT_NOT_NULL(506, "评论内容不能为空"),
     TAG_IS_EXIST(507, "该标签已经存在"),
-    TAG_IS_NOEXIST(508, "该标签已经存在"),
+    TAG_NOT_EXIST(508, "标签不存在"),
     CONTENT_IS_BLANK(509, "内容不能为空"),
     LINK_IS_EXIST(510, "当前友链已经存在"),
     DELETE_LINK_FAIL(511, "删除友链失败"),

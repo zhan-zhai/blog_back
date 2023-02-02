@@ -9,14 +9,14 @@ import com.zdz.domain.ResponseResult;
 import com.zdz.domain.dto.LoginDto;
 import com.zdz.domain.dto.RegisterDto;
 import com.zdz.domain.dto.UserInfoDto;
-import com.zdz.domain.entity.LoginUser;
-import com.zdz.domain.entity.User;
+import com.zdz.domain.entity.*;
 import com.zdz.domain.vo.LoginVo;
+import com.zdz.domain.vo.SystemUserInfoVo;
 import com.zdz.domain.vo.UserInfoVo;
 import com.zdz.enums.AppHttpCodeEnum;
 import com.zdz.exception.SystemException;
+import com.zdz.mapper.*;
 import com.zdz.service.UserService;
-import com.zdz.mapper.UserMapper;
 import com.zdz.utils.BeanCopyPropertiesUtils;
 import com.zdz.utils.JwtUtils;
 import com.zdz.utils.RedisCache;
@@ -28,7 +28,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
 * @author zdz
@@ -116,6 +120,31 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         User user = BeanCopyPropertiesUtils.copyBean(registerDto,User.class);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         save(user);
+        return ResponseResult.okResult();
+    }
+
+    @Override
+    public ResponseResult<?> systemLogin(LoginDto loginDto) {
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(loginDto.getUserName(),loginDto.getPassword());
+        Authentication authenticate = authenticationManager.authenticate(authenticationToken);
+        if(Objects.isNull(authenticate)){
+            throw new SystemException(AppHttpCodeEnum.LOGIN_ERROR);
+        }
+        LoginUser loginUser = (LoginUser) authenticate.getPrincipal();
+        if(!loginUser.getUser().getType().equals(CommonConstants.USER_TYPE_ADMIN))
+            throw new SystemException(AppHttpCodeEnum.NEED_ADMIN);
+        String userId = loginUser.getUser().getId().toString();
+        String token = JwtUtils.createJWT(userId);
+        redisCache.setCacheObject(RedisConstants.BLOG_ADMIN_LOGIN+userId,loginUser);
+        Map<String,String> map = new HashMap<>();
+        map.put("token",token);
+        return ResponseResult.okResult(map);
+    }
+
+    @Override
+    public ResponseResult<?> systemLogout() {
+        Long userId = SecurityUtils.getUserId();
+        redisCache.deleteObject(RedisConstants.BLOG_ADMIN_LOGIN+userId);
         return ResponseResult.okResult();
     }
 

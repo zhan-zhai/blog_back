@@ -60,23 +60,6 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment>
         return ResponseResult.okResult();
     }
 
-//    @Override
-//    public ResponseResult<PageVo> linkCommentList(Integer pageNum, Integer pageSize) {
-//        LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
-//        queryWrapper.eq(Comment::getType,CommonConstants.COMMENT_TYPE_LINK);
-//
-//        Page<Comment> page = new Page<>(pageNum,pageSize);
-//        page(page,queryWrapper);
-//
-//        List<CommentVo> commentVos = toCommentVoList(page.getRecords());
-//
-//        commentVos = commentVos.stream()
-//                .map(commentVo -> commentVo.setChildren(getChildren(commentVo.getId())))
-//                .collect(Collectors.toList());
-//
-//        return ResponseResult.okResult(new PageVo(commentVos, page.getTotal()));
-//    }
-
     private List<CommentVo> getChildren(Long id){
         LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Comment::getRootId,id);

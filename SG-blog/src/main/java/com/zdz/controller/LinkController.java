@@ -14,7 +14,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/link")
-@Api("友链相关接口")
+@Api(tags = "友链相关接口")
 public class LinkController {
     @Autowired
     private LinkService linkService;

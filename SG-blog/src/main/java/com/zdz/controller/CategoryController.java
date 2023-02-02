@@ -14,7 +14,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/category")
-@Api("文章分类相关接口")
+@Api(tags = "文章分类相关接口")
 public class CategoryController {
     @Autowired
     private CategoryService categoryService;

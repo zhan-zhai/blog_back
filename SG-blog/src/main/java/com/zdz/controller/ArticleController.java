@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
-@Api("文章相关接口")
+@Api(tags = "文章相关接口")
 @RestController
 @RequestMapping("/article")
 @Validated
@@ -37,13 +37,13 @@ public class ArticleController {
 
     @GetMapping("/articleDetails/{id}")
     @ApiOperation("获取文章详情")
-    public ResponseResult<ArticleDetailsVo> getArticleDetails(@PathVariable("id")Long id){
+    public ResponseResult<ArticleDetailsVo> getArticleDetails(@PathVariable("id")  @NotNull(message = "参数不可为空")Long id){
         return articleService.getArticleDetails(id);
     }
 
     @PutMapping("/updateViewCount/{id}")
     @ApiOperation("更新文章浏览量")
-    public ResponseResult<?> updateViewCount(@PathVariable("id") Long id){
+    public ResponseResult<?> updateViewCount(@PathVariable("id") @NotNull(message = "参数不可为空") Long id){
         return articleService.updateViewCount(id);
     }
 }

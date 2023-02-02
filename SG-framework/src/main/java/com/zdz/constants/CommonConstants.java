@@ -25,4 +25,24 @@ public class CommonConstants {
 
     //根评论
     public static final Long COMMENT_ROOT = -1L;
+
+    //菜单类型（M目录 C菜单 F按钮）
+    public static final String MENU_TYPE_M = "M";
+    public static final String MENU_TYPE_C = "C";
+    public static final String MENU_TYPE_F = "F";
+
+    //菜单状态（0正常 1停用）
+    public static final String MENU_STATUS_NORMAL = "0";
+    public static final String MENU_STATUS_DISABLED = "1";
+
+    //用户类型
+    public static final String USER_TYPE_ORDINARY = "0";
+    public static final String USER_TYPE_ADMIN = "1";
+    public static final Long SUPER_ADMIN = 1L;
+
+    //角色状态（0正常 1停用）
+    public static final String ROLE_STATUS_NORMAL = "0";
+    public static final String ROLE_STATUS_DISABLED = "1";
+
+    public static final String CATEGORY_EXPORT_FILE = "category";
 }

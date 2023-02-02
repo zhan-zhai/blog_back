@@ -6,7 +6,9 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.zdz.constants.CommonConstants;
 import com.zdz.constants.RedisConstants;
 import com.zdz.domain.ResponseResult;
+import com.zdz.domain.dto.AddArticleDto;
 import com.zdz.domain.entity.Article;
+import com.zdz.domain.entity.ArticleTag;
 import com.zdz.domain.vo.ArticleDetailsVo;
 import com.zdz.domain.vo.ArticleListVo;
 import com.zdz.domain.vo.HotArticleVo;
@@ -14,10 +16,12 @@ import com.zdz.domain.vo.PageVo;
 import com.zdz.mapper.CategoryMapper;
 import com.zdz.service.ArticleService;
 import com.zdz.mapper.ArticleMapper;
+import com.zdz.service.ArticleTagService;
 import com.zdz.utils.BeanCopyPropertiesUtils;
 import com.zdz.utils.RedisCache;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -35,6 +39,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
     private CategoryMapper categoryMapper;
     @Autowired
     private RedisCache redisCache;
+    @Autowired
+    private ArticleTagService articleTagService;
 
     @Override
     /**
@@ -91,6 +97,18 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
     @Override
     public ResponseResult<?> updateViewCount(Long id) {
         redisCache.incrementCacheMapValue(RedisConstants.ARTICLE_VIEW_COUNT,id.toString(),1);
+        return ResponseResult.okResult();
+    }
+
+    @Override
+    @Transactional
+    public ResponseResult<?> addArticle(AddArticleDto addArticleDto) {
+        Article article = BeanCopyPropertiesUtils.copyBean(addArticleDto,Article.class);
+        save(article);
+        List<ArticleTag> articleTags = addArticleDto.getTags().stream()
+                .map(tagId->new ArticleTag(article.getId(),tagId))
+                .collect(Collectors.toList());
+        articleTagService.saveBatch(articleTags);
         return ResponseResult.okResult();
     }
 }

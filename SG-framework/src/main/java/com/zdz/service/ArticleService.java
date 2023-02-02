@@ -1,6 +1,7 @@
 package com.zdz.service;
 
 import com.zdz.domain.ResponseResult;
+import com.zdz.domain.dto.AddArticleDto;
 import com.zdz.domain.entity.Article;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.zdz.domain.vo.ArticleDetailsVo;
@@ -22,4 +23,6 @@ public interface ArticleService extends IService<Article> {
     ResponseResult<ArticleDetailsVo> getArticleDetails(Long id);
 
     ResponseResult<?> updateViewCount(Long id);
+
+    ResponseResult<?> addArticle(AddArticleDto addArticleDto);
 }

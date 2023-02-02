@@ -21,6 +21,10 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Objects;
+
+import static com.zdz.enums.AppHttpCodeEnum.NEED_LOGIN;
+
 @Component
 public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
     @Autowired
@@ -38,12 +42,18 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
             claims = JwtUtils.parseJWT(token);
         } catch (Exception e) {
             e.printStackTrace();
-            ResponseResult<Object> result = ResponseResult.errorResult(AppHttpCodeEnum.NEED_LOGIN);
+            ResponseResult<Object> result = ResponseResult.errorResult(NEED_LOGIN);
             WebUtils.renderString(response, JSON.toJSONString(result));
             return;
         }
         String userId = claims.getSubject();
         LoginUser loginUser = redisCache.getCacheObject(RedisConstants.BLOG_USER_LOGIN+userId);
+        if (Objects.isNull(loginUser)){
+            //3.1缓存过期
+            ResponseResult<Object> errorResult = ResponseResult.errorResult(NEED_LOGIN);
+            WebUtils.renderString(response, JSON.toJSONString(errorResult));
+            return;
+        }
 
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(loginUser,null,null);
         SecurityContextHolder.getContext().setAuthentication(authenticationToken);

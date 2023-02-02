@@ -5,6 +5,7 @@ import com.zdz.domain.entity.Category;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.zdz.domain.vo.CategoryVo;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 /**
@@ -14,4 +15,8 @@ import java.util.List;
 */
 public interface CategoryService extends IService<Category> {
     ResponseResult<List<CategoryVo>> getCategoryList();
+
+    ResponseResult<List<CategoryVo>> listAllCategory();
+
+    void exportExcel(HttpServletResponse response, String fileName);
 }

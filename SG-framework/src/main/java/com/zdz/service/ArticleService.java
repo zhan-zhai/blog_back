@@ -2,11 +2,14 @@ package com.zdz.service;
 
 import com.zdz.domain.ResponseResult;
 import com.zdz.domain.dto.AddArticleDto;
+import com.zdz.domain.dto.ArticleListDto;
+import com.zdz.domain.dto.UpdateArticleDto;
 import com.zdz.domain.entity.Article;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.zdz.domain.vo.ArticleDetailsVo;
 import com.zdz.domain.vo.HotArticleVo;
 import com.zdz.domain.vo.PageVo;
+import com.zdz.domain.vo.SysArticleDetailsVo;
 
 import java.util.List;
 
@@ -25,4 +28,10 @@ public interface ArticleService extends IService<Article> {
     ResponseResult<?> updateViewCount(Long id);
 
     ResponseResult<?> addArticle(AddArticleDto addArticleDto);
+
+    ResponseResult<PageVo> sysArticleList(Integer pageNum, Integer pageSize, ArticleListDto articleListDto);
+
+    ResponseResult<SysArticleDetailsVo> getSysArticleDetails(Long id);
+
+    ResponseResult<?> updateArticle(UpdateArticleDto articleDto);
 }

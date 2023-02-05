@@ -1,18 +1,19 @@
 package com.zdz.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.zdz.constants.CommonConstants;
 import com.zdz.constants.RedisConstants;
 import com.zdz.domain.ResponseResult;
 import com.zdz.domain.dto.AddArticleDto;
+import com.zdz.domain.dto.ArticleListDto;
+import com.zdz.domain.dto.UpdateArticleDto;
 import com.zdz.domain.entity.Article;
 import com.zdz.domain.entity.ArticleTag;
-import com.zdz.domain.vo.ArticleDetailsVo;
-import com.zdz.domain.vo.ArticleListVo;
-import com.zdz.domain.vo.HotArticleVo;
-import com.zdz.domain.vo.PageVo;
+import com.zdz.domain.vo.*;
+import com.zdz.enums.AppHttpCodeEnum;
 import com.zdz.mapper.CategoryMapper;
 import com.zdz.service.ArticleService;
 import com.zdz.mapper.ArticleMapper;
@@ -22,6 +23,7 @@ import com.zdz.utils.RedisCache;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -109,6 +111,52 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
                 .map(tagId->new ArticleTag(article.getId(),tagId))
                 .collect(Collectors.toList());
         articleTagService.saveBatch(articleTags);
+        return ResponseResult.okResult();
+    }
+
+    @Override
+    public ResponseResult<PageVo> sysArticleList(Integer pageNum, Integer pageSize, ArticleListDto articleListDto) {
+        LambdaQueryWrapper<Article> wrapper = new LambdaQueryWrapper<>();
+        wrapper.like(StringUtils.hasText(articleListDto.getTitle()),Article::getTitle,articleListDto.getTitle());
+        wrapper.like(StringUtils.hasText(articleListDto.getSummary()),Article::getSummary,articleListDto.getSummary());
+        Page<Article> page = new Page<>(pageNum,pageSize);
+        page(page,wrapper);
+        List<Article> articles = page.getRecords();
+        List<SysArticleListVo> voList = BeanCopyPropertiesUtils.copyBeanList(articles,SysArticleListVo.class);
+//        voList = voList.stream()
+//                .map(vo->vo.setViewCount(Long.valueOf((Integer)redisCache.getCacheMapValue(RedisConstants.ARTICLE_VIEW_COUNT,vo.getId().toString()))))
+//                .collect(Collectors.toList());
+        PageVo pageVo = new PageVo(voList,page.getTotal());
+        return ResponseResult.okResult(pageVo);
+    }
+
+    @Override
+    public ResponseResult<SysArticleDetailsVo> getSysArticleDetails(Long id) {
+        Article article = getById(id);
+        SysArticleDetailsVo articleDetailsVo = BeanCopyPropertiesUtils.copyBean(article,SysArticleDetailsVo.class);
+//        articleDetailsVo.setViewCount(Long.valueOf((Integer)redisCache.getCacheMapValue(RedisConstants.ARTICLE_VIEW_COUNT,id.toString())));
+        LambdaQueryWrapper<ArticleTag> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ArticleTag::getArticleId,id);
+        List<ArticleTag> articleTags = articleTagService.list(wrapper);
+        List<Long> tags = articleTags.stream().map(ArticleTag::getTagId).collect(Collectors.toList());
+        articleDetailsVo.setTags(tags);
+        return ResponseResult.okResult(articleDetailsVo);
+    }
+
+    @Override
+    public ResponseResult<?> updateArticle(UpdateArticleDto articleDto) {
+        LambdaUpdateWrapper<Article> wrapper = new LambdaUpdateWrapper<>();
+        wrapper.eq(Article::getId,articleDto.getId());
+        wrapper.set(Article::getTitle,articleDto.getTitle());
+        wrapper.set(Article::getContent,articleDto.getContent());
+        wrapper.set(Article::getSummary,articleDto.getSummary());
+        wrapper.set(Article::getCategoryId,articleDto.getCategoryId());
+        wrapper.set(Article::getThumbnail,articleDto.getThumbnail());
+        wrapper.set(Article::getIsTop,articleDto.getIsTop());
+        wrapper.set(Article::getStatus,articleDto.getStatus());
+        wrapper.set(Article::getIsComment,articleDto.getIsComment());
+        boolean update = update(new Article(),wrapper);
+        if(!update)return ResponseResult.errorResult(AppHttpCodeEnum.UPDATE_FAILED);
         return ResponseResult.okResult();
     }
 }

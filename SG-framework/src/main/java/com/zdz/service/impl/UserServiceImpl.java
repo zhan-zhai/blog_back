@@ -2,20 +2,19 @@ package com.zdz.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.zdz.constants.CommonConstants;
 import com.zdz.constants.RedisConstants;
 import com.zdz.domain.ResponseResult;
-import com.zdz.domain.dto.LoginDto;
-import com.zdz.domain.dto.RegisterDto;
-import com.zdz.domain.dto.UserInfoDto;
+import com.zdz.domain.dto.*;
 import com.zdz.domain.entity.*;
-import com.zdz.domain.vo.LoginVo;
-import com.zdz.domain.vo.SystemUserInfoVo;
-import com.zdz.domain.vo.UserInfoVo;
+import com.zdz.domain.vo.*;
 import com.zdz.enums.AppHttpCodeEnum;
 import com.zdz.exception.SystemException;
 import com.zdz.mapper.*;
+import com.zdz.service.RoleService;
+import com.zdz.service.UserRoleService;
 import com.zdz.service.UserService;
 import com.zdz.utils.BeanCopyPropertiesUtils;
 import com.zdz.utils.JwtUtils;
@@ -27,6 +26,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.HashMap;
 import java.util.List;
@@ -48,6 +49,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     private RedisCache redisCache;
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
+    @Autowired
+    private UserRoleService userRoleService;
+    @Autowired
+    private RoleService roleService;
 
     @Override
     public ResponseResult<LoginVo> login(LoginDto loginDto) {
@@ -66,7 +71,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
     @Override
-    public ResponseResult logout() {
+    public ResponseResult<?> logout() {
         Long userId = SecurityUtils.getUserId();
         redisCache.deleteObject(RedisConstants.BLOG_USER_LOGIN+userId);
 
@@ -83,9 +88,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     @Override
     public ResponseResult<?> updateUserInfo(UserInfoDto userInfoDto) {
         Long userId = userInfoDto.getId();
-        if(!checkEmail(userInfoDto.getEmail(),userId))
+        if(checkEmail(userInfoDto.getEmail(),userId))
             throw new SystemException(AppHttpCodeEnum.EMAIL_EXIST);
-        if(!checkNickname(userInfoDto.getNickName(),userId))
+        if(checkNickname(userInfoDto.getNickName(),userId))
             throw new SystemException(AppHttpCodeEnum.NICKNAME_EXIST);
         LambdaUpdateWrapper<User> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(User::getId,userId);
@@ -111,11 +116,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     @Override
     public ResponseResult<?> register(RegisterDto registerDto) {
-        if(!checkUsername(registerDto.getUserName()))
+        if(checkUsername(registerDto.getUserName()))
             throw new SystemException(AppHttpCodeEnum.USERNAME_EXIST);
-        if(!checkEmail(registerDto.getEmail(),null))
+        if(checkEmail(registerDto.getEmail(),null))
             throw new SystemException(AppHttpCodeEnum.EMAIL_EXIST);
-        if(!checkNickname(registerDto.getNickName(),null))
+        if(checkNickname(registerDto.getNickName(),null))
             throw new SystemException(AppHttpCodeEnum.NICKNAME_EXIST);
         User user = BeanCopyPropertiesUtils.copyBean(registerDto,User.class);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
@@ -148,25 +153,92 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         return ResponseResult.okResult();
     }
 
+    @Override
+    public ResponseResult<PageVo> getUserList(Integer pageNum, Integer pageSize, UserListDto userListDto) {
+        LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
+        wrapper.like(StringUtils.hasText(userListDto.getUserName()),User::getUserName,userListDto.getUserName());
+        wrapper.eq(StringUtils.hasText(userListDto.getPhonenumber()),User::getPhonenumber,userListDto.getPhonenumber());
+        wrapper.eq(StringUtils.hasText(userListDto.getStatus()),User::getStatus,userListDto.getStatus());
+        Page<User> page = new Page<>(pageNum,pageSize);
+        page(page,wrapper);
+        List<User> userList = page.getRecords();
+        List<UserListVo> voList = BeanCopyPropertiesUtils.copyBeanList(userList,UserListVo.class);
+        PageVo pageVo = new PageVo(voList,page.getTotal());
+        return ResponseResult.okResult(pageVo);
+    }
+
+    @Override
+    @Transactional
+    public ResponseResult<?> addUser(AddUserDto addUserDto) {
+        if(checkUsername(addUserDto.getUserName()))
+            throw new SystemException(AppHttpCodeEnum.USERNAME_EXIST);
+        if(checkEmail(addUserDto.getEmail(),null))
+            throw new SystemException(AppHttpCodeEnum.EMAIL_EXIST);
+        if(checkNickname(addUserDto.getNickName(),null))
+            throw new SystemException(AppHttpCodeEnum.NICKNAME_EXIST);
+        User user = BeanCopyPropertiesUtils.copyBean(addUserDto,User.class);
+        user.setType(CommonConstants.USER_TYPE_ADMIN);
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        save(user);
+        List<UserRole> userRoles = addUserDto.getRoleIds().stream()
+                .map(roleId -> new UserRole(user.getId(),roleId))
+                .collect(Collectors.toList());
+        userRoleService.saveBatch(userRoles);
+        return ResponseResult.okResult();
+    }
+
+    @Override
+    public ResponseResult<SysUserByIdVo> getUserById(Long id) {
+        User user = getById(id);
+        UserListVo userInfoVo = BeanCopyPropertiesUtils.copyBean(user,UserListVo.class);
+        List<RoleListVo> roles = roleService.listAllRole().getData();
+        LambdaUpdateWrapper<UserRole> wrapper = new LambdaUpdateWrapper<>();
+        wrapper.eq(UserRole::getUserId,user.getId());
+        List<Long> roleIds = userRoleService.list(wrapper).stream()
+                .map(UserRole::getRoleId).collect(Collectors.toList());
+        return ResponseResult.okResult(new SysUserByIdVo(roleIds,roles,userInfoVo));
+    }
+
+    @Override
+    @Transactional
+    public ResponseResult<?> updateUser(UpdateUserDto updateUserDto) {
+        LambdaUpdateWrapper<User> wrapper = new LambdaUpdateWrapper<>();
+        wrapper.eq(User::getId,updateUserDto.getId());
+        wrapper.set(User::getUserName,updateUserDto.getUserName());
+        wrapper.set(User::getEmail,updateUserDto.getEmail());
+        wrapper.set(User::getNickName,updateUserDto.getNickName());
+        wrapper.set(User::getSex,updateUserDto.getSex());
+        wrapper.set(User::getStatus,updateUserDto.getStatus());
+        update(new User(),wrapper);
+        LambdaQueryWrapper<UserRole> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(UserRole::getUserId,updateUserDto.getId());
+        userRoleService.remove(queryWrapper);
+        List<UserRole> userRoles = updateUserDto.getRoleIds().stream()
+                .map(roleId->new UserRole(updateUserDto.getId(),roleId))
+                .collect(Collectors.toList());
+        userRoleService.saveBatch(userRoles);
+        return ResponseResult.okResult();
+    }
+
     private boolean checkUsername(String username){
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(User::getUserName,username);
         User user = getOne(queryWrapper);
-        return Objects.isNull(user);
+        return !Objects.isNull(user);
     }
     private boolean checkEmail(String email,Long userId){
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(User::getEmail,email);
         if(!Objects.isNull(userId))queryWrapper.ne(User::getId,userId);
         User user = getOne(queryWrapper);
-        return Objects.isNull(user);
+        return !Objects.isNull(user);
     }
     private boolean checkNickname(String nickname,Long userId){
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(User::getNickName,nickname);
         if(!Objects.isNull(userId))queryWrapper.ne(User::getId,userId);
         User user = getOne(queryWrapper);
-        return Objects.isNull(user);
+        return !Objects.isNull(user);
     }
 }
 

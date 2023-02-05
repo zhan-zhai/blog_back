@@ -1,22 +1,15 @@
-package com.zdz.domain.entity;
+package com.zdz.domain.vo;
 
-import com.baomidou.mybatisplus.annotation.*;
-
-import java.io.Serializable;
-import java.util.Date;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
-/**
- * 菜单权限表
- * @TableName sys_menu
- */
-@TableName(value ="sys_menu")
+import java.util.Date;
+
 @Data
-public class Menu implements Serializable {
-    /**
-     * 菜单ID
-     */
-    @TableId(type = IdType.AUTO)
+@NoArgsConstructor
+@AllArgsConstructor
+public class MenuListVo {
     private Long id;
 
     /**
@@ -75,39 +68,7 @@ public class Menu implements Serializable {
     private String icon;
 
     /**
-     * 创建者
-     */
-    @TableField(fill = FieldFill.INSERT)
-    private Long createBy;
-
-    /**
-     *
-     */
-    @TableField(fill = FieldFill.INSERT)
-    private Date createTime;
-
-    /**
-     *
-     */
-    @TableField(fill = FieldFill.INSERT_UPDATE)
-    private Long updateBy;
-
-    /**
-     *
-     */
-    @TableField(fill = FieldFill.INSERT_UPDATE)
-    private Date updateTime;
-
-    /**
      * 备注
      */
     private String remark;
-
-    /**
-     * 
-     */
-    private String delFlag;
-
-    @TableField(exist = false)
-    private static final long serialVersionUID = 1L;
 }

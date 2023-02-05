@@ -1,13 +1,12 @@
 package com.zdz.service;
 
 import com.zdz.domain.ResponseResult;
-import com.zdz.domain.dto.LoginDto;
-import com.zdz.domain.dto.RegisterDto;
-import com.zdz.domain.dto.UserInfoDto;
+import com.zdz.domain.dto.*;
 import com.zdz.domain.entity.User;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.zdz.domain.vo.LoginVo;
-import com.zdz.domain.vo.SystemUserInfoVo;
+import com.zdz.domain.vo.PageVo;
+import com.zdz.domain.vo.SysUserByIdVo;
 import com.zdz.domain.vo.UserInfoVo;
 
 /**
@@ -19,7 +18,7 @@ public interface UserService extends IService<User> {
 
     ResponseResult<LoginVo> login(LoginDto loginDto);
 
-    ResponseResult logout();
+    ResponseResult<?> logout();
 
     ResponseResult<UserInfoVo> userInfo();
 
@@ -31,4 +30,11 @@ public interface UserService extends IService<User> {
 
     ResponseResult<?> systemLogout();
 
+    ResponseResult<PageVo> getUserList(Integer pageNum, Integer pageSize, UserListDto userListDto);
+
+    ResponseResult<?> addUser(AddUserDto addUserDto);
+
+    ResponseResult<SysUserByIdVo> getUserById(Long id);
+
+    ResponseResult<?> updateUser(UpdateUserDto updateUserDto);
 }

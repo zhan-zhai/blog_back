@@ -1,11 +1,12 @@
 package com.zdz.controller;
 
 import com.zdz.domain.ResponseResult;
+import com.zdz.domain.dto.AddUserDto;
 import com.zdz.domain.dto.LoginDto;
+import com.zdz.domain.dto.UpdateUserDto;
+import com.zdz.domain.dto.UserListDto;
 import com.zdz.domain.entity.LoginUser;
-import com.zdz.domain.vo.RoutersVo;
-import com.zdz.domain.vo.SystemUserInfoVo;
-import com.zdz.domain.vo.UserInfoVo;
+import com.zdz.domain.vo.*;
 import com.zdz.service.MenuService;
 import com.zdz.service.RoleService;
 import com.zdz.service.UserService;
@@ -15,11 +16,9 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 @RestController
@@ -64,5 +63,33 @@ public class UserController {
     @ApiOperation("获取系统用户路由信息")
     public ResponseResult<RoutersVo> getRouters(){
         return menuService.getRouters();
+    }
+
+    @GetMapping("/user/list")
+    @ApiOperation("获取用户列表")
+    public ResponseResult<PageVo> userList(@RequestParam @NotNull(message = "页码不可为空") Integer pageNum,
+                                           @RequestParam @NotNull(message = "分页大小不可为空") Integer pageSize,
+                                           UserListDto userListDto){
+        return userService.getUserList(pageNum,pageSize,userListDto);
+    }
+
+    @PostMapping("/user")
+    public ResponseResult<?> addUser(@RequestBody @Validated AddUserDto addUserDto){
+        return userService.addUser(addUserDto);
+    }
+
+    @DeleteMapping("/user/{id}")
+    public ResponseResult<?> deleteUser(@PathVariable @NotNull(message = "参数不可为空") Long id){
+        return ResponseResult.okResult(userService.removeById(id));
+    }
+
+    @GetMapping("/user/{id}")
+    public ResponseResult<SysUserByIdVo> getUserById(@PathVariable @NotNull(message = "参数不可为空") Long id){
+        return userService.getUserById(id);
+    }
+
+    @PutMapping("/user")
+    public ResponseResult<?> updateUser(@RequestBody @Validated UpdateUserDto updateUserDto){
+        return userService.updateUser(updateUserDto);
     }
 }

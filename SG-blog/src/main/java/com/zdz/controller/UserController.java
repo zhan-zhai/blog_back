@@ -28,7 +28,7 @@ public class UserController {
 
     @PostMapping("/logout")
     @ApiOperation("用户登出")
-    public ResponseResult logout(){
+    public ResponseResult<?> logout(){
         return userService.logout();
     }
 
